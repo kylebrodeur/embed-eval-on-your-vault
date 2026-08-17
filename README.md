@@ -84,6 +84,10 @@ will actually run it again next time your vault grows.
 `embed-eval-on-your-vault.py` is the whole thing. Read the docstring at the
 top for the queries file format and the embed-backend swap pattern.
 
+## The canonical harness
+
+The full, more complete eval harness lives in the [pi-vault-mind](https://github.com/kylebrodeur/pi-vault-mind) repo at `eval/run_eval.py`. It supports multiple providers (Ollama, HuggingFace Inference, a Modal GPU service), has a `uv` script with no setup, and is the harness that produced the numbers in the blog post. Use this repository's single-file version if you want a pure-Python, zero-dependency A/B that you can drop into any vault. Use the canonical harness if you want the full provider support and the same plumbing the production eval ran on.
+
 ## Companion dataset
 
 The CSVs that produced the
