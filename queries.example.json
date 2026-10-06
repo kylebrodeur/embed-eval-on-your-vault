@@ -1,7 +1,7 @@
 [
-  {"question": "how do I prime the pump tubing?", "answer_note": "iot-rig/priming.md"},
+  {"question": "how do I prime the pump tubing?", "answer_note": "projects/garden/priming.md"},
   {"question": "what model won the embedding eval?", "answer_note": "eval/findings.md"},
-  {"question": "how do I know if the basil needs water?", "answer_note": "iot-rig/watering.md"},
+  {"question": "how do I know if the basil needs water?", "answer_note": "projects/garden/watering.md"},
   {"question": "what was the result of the chunking A/B?", "answer_note": "eval/chunking-results.md"},
   {"question": "what is the Knowledge Archaeology thread?", "answer_note": "thread/knowledge-archaeology.md"}
 ]

@@ -53,7 +53,7 @@ def embed(model: str, text: str, provider: str = "ollama") -> list[float]:
 # 1. Make a queries file (JSON list of {question, answer_note})
 cat > queries.json << 'QUERIES'
 [
-  {"question": "how do I prime the pump tubing?", "answer_note": "iot-rig/priming.md"},
+  {"question": "how do I prime the pump tubing?", "answer_note": "projects/garden/priming.md"},
   {"question": "what model won the eval?",        "answer_note": "eval/findings.md"}
 ]
 QUERIES
@@ -95,7 +95,7 @@ from the same author:
 
 - **[modal-embedding-server](https://github.com/kylebrodeur/modal-embedding-server):** GPU-backed embeddings with a monotonic sync protocol that pulls vectors down to a local store. Its `eval/` is the canonical (multi-provider) version of this harness.
 - **[modal-inference-server](https://github.com/kylebrodeur/modal-inference-server):** OpenAI-compatible LLM serving with hot-set routing and scale-to-zero.
-- **[modal-vision-server](https://github.com/kylebrodeur/modal-vision-server):** BioCLIP-2 classification with adaptive SAM 2.1 segmentation.
+- **[modal-vision-server](https://github.com/kylebrodeur/modal-vision-server):** Generic vision classification: pick your model (open_clip or transformers weights), your segmenter (SAM 2.1 or none), and your fast gate (self, cheap CLIP, deterministic script, or external endpoint). The BioCLIP plant stack ships as the example card.
 - **[modal-finetune-server](https://github.com/kylebrodeur/modal-finetune-server):** Profile-driven LoRA fine-tune pipeline with an honest eval gate.
 - **[modal-toolkit](https://github.com/kylebrodeur/modal-toolkit):** One operator CLI (`mtk`) that runs the fleet: `doctor`, `warm --all`, `shutdown --all`, `cost`, `flow`.
 
@@ -113,3 +113,7 @@ ranking before you trust it on your own corpus.
 ## License
 
 MIT. Use it, fork it, ship it.
+
+---
+
+Built by [Kyle Brodeur](https://kylebrodeur.com) · Model-selection deep-dive: [Choose the Right Embedding Model for Your Data](https://kylebrodeur.substack.com/p/choose-embedding-model-for-your-data)

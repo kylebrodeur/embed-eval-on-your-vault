@@ -25,7 +25,7 @@ function to hit any provider (OpenAI, Cohere, a Modal endpoint, etc.).
 
 QUERIES FILE FORMAT (JSON list; one object per test question):
     [
-      {"question": "how do I prime the pump tubing?", "answer_note": "iot-rig/priming.md"},
+      {"question": "how do I prime the pump tubing?", "answer_note": "projects/garden/priming.md"},
       {"question": "what model won the eval?",        "answer_note": "eval/findings.md"}
     ]
   - "answer_note" is the note that SHOULD be retrieved, given as a path RELATIVE to
