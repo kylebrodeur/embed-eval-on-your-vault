@@ -1,0 +1,29 @@
+#!/bin/sh
+# Pre-commit: fast local gate. Runs ruff format --check + ruff check on the
+# STAGED python files only; blocks the commit on any failure. Install once
+# per clone: git config core.hooksPath .githooks
+set -u
+
+files=$(git diff --cached --name-only --diff-filter=ACMR | grep '\.py$' || true)
+if [ -z "$files" ]; then
+    exit 0
+fi
+
+# Run from the repo root regardless of where the commit was staged.
+cd "$(git rev-parse --show-toplevel)"
+
+fail=0
+for f in $files; do
+    [ -f "$f" ] || continue
+    uv run ruff format --check "$f" >/dev/null 2>&1 || { echo "format needed: $f (run: uv run ruff format $f)"; fail=1; }
+    if ! uv run ruff check "$f" >/tmp/lint_msg 2>&1; then
+        cat /tmp/lint_msg
+        fail=1
+    fi
+done
+
+if [ "$fail" -eq 1 ]; then
+    echo "pre-commit: fix the above (uv run ruff format <file>; uv run ruff check <file>) or commit with --no-verify in an emergency."
+    exit 1
+fi
+exit 0

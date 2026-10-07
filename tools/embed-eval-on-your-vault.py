@@ -45,11 +45,20 @@ Output CSV columns match the source eval format exactly:
 """
 
 from __future__ import annotations
-import argparse, csv, json, sys, time, math, urllib.request, urllib.error
+
+import argparse
+import csv
+import json
+import math
+import sys
+import time
+import urllib.error
+import urllib.request
 from pathlib import Path
 
 # ------------------------------------------------------------------ backend ---
 OLLAMA_URL = "http://localhost:11434/api/embeddings"
+
 
 def embed(model: str, text: str, provider: str = "ollama") -> list[float]:
     """Return one embedding vector for `text`. Swap this to change providers.
@@ -59,15 +68,19 @@ def embed(model: str, text: str, provider: str = "ollama") -> list[float]:
     """
     if provider == "ollama":
         payload = json.dumps({"model": model, "prompt": text}).encode()
-        req = urllib.request.Request(OLLAMA_URL, data=payload,
-                                     headers={"Content-Type": "application/json"})
+        req = urllib.request.Request(
+            OLLAMA_URL, data=payload, headers={"Content-Type": "application/json"}
+        )
         try:
             with urllib.request.urlopen(req, timeout=120) as r:
                 return json.load(r)["embedding"]
         except urllib.error.URLError as e:
-            sys.exit(f"embed() failed for model={model!r}: {e}\n"
-                     f"Is `ollama serve` running and `ollama pull {model}` done?")
+            sys.exit(
+                f"embed() failed for model={model!r}: {e}\n"
+                f"Is `ollama serve` running and `ollama pull {model}` done?"
+            )
     raise ValueError(f"unknown provider: {provider!r} -- edit embed() to add it")
+
 
 # ------------------------------------------------------------------ math ------
 def cosine(a: list[float], b: list[float]) -> float:
@@ -76,20 +89,29 @@ def cosine(a: list[float], b: list[float]) -> float:
     nb = math.sqrt(sum(y * y for y in b))
     return dot / (na * nb) if na and nb else 0.0
 
+
 def rank_notes(qvec, note_vecs: dict[str, list[float]]) -> list[str]:
     """Return note ids sorted by descending cosine similarity to the query."""
-    return [nid for nid, _ in sorted(
-        ((nid, cosine(qvec, v)) for nid, v in note_vecs.items()),
-        key=lambda t: t[1], reverse=True)]
+    return [
+        nid
+        for nid, _ in sorted(
+            ((nid, cosine(qvec, v)) for nid, v in note_vecs.items()),
+            key=lambda t: t[1],
+            reverse=True,
+        )
+    ]
+
 
 def recall_at_k(ranked: list[str], truth: str, k: int) -> int:
     return 1 if truth in ranked[:k] else 0
+
 
 def reciprocal_rank(ranked: list[str], truth: str, k: int) -> float:
     for i, nid in enumerate(ranked[:k], start=1):
         if nid == truth:
             return 1.0 / i
     return 0.0
+
 
 # ------------------------------------------------------------------ corpus ----
 def load_corpus(corpus_dir: Path, exts=(".md", ".txt")) -> dict[str, str]:
@@ -101,9 +123,10 @@ def load_corpus(corpus_dir: Path, exts=(".md", ".txt")) -> dict[str, str]:
             rel = str(p.relative_to(corpus_dir))
             try:
                 notes[rel] = p.read_text(encoding="utf-8", errors="ignore")
-            except Exception as e:
+            except OSError as e:
                 print(f"  ! skipping {rel}: {e}", file=sys.stderr)
     return notes
+
 
 def load_queries(path: Path) -> list[dict]:
     if path.suffix.lower() == ".json":
@@ -118,9 +141,11 @@ def load_queries(path: Path) -> list[dict]:
             out.append({"question": q, "answer_note": a})
     return out
 
+
 # ------------------------------------------------------------------ eval ------
-def evaluate(model: str, provider: str, notes: dict[str, str],
-             queries: list[dict], k: int) -> dict:
+def evaluate(
+    model: str, provider: str, notes: dict[str, str], queries: list[dict], k: int
+) -> dict:
     # 1) embed every note (this is the boring, load-bearing step: real notes)
     note_vecs: dict[str, list[float]] = {}
     for nid, text in notes.items():
@@ -140,41 +165,69 @@ def evaluate(model: str, provider: str, notes: dict[str, str],
         qvec = embed(model, q["question"], provider)
         ranked = rank_notes(qvec, note_vecs)
         latencies.append((time.perf_counter() - t0) * 1000.0)
-        r1  += recall_at_k(ranked, truth, 1)
-        r5  += recall_at_k(ranked, truth, 5)
+        r1 += recall_at_k(ranked, truth, 1)
+        r5 += recall_at_k(ranked, truth, 5)
         r10 += recall_at_k(ranked, truth, min(10, k))
         mrr += reciprocal_rank(ranked, truth, min(10, k))
     n = len(queries) or 1
     if missing:
-        print(f"  ! {missing} query answer_note(s) not present in --corpus "
-              f"(counted as misses -- check your paths)", file=sys.stderr)
+        print(
+            f"  ! {missing} query answer_note(s) not present in --corpus "
+            f"(counted as misses -- check your paths)",
+            file=sys.stderr,
+        )
     return {
-        "name": model, "provider": provider, "model": model, "dim": dim,
-        "recall@1": r1 / n, "recall@5": r5 / n, "recall@10": r10 / n,
+        "name": model,
+        "provider": provider,
+        "model": model,
+        "dim": dim,
+        "recall@1": r1 / n,
+        "recall@5": r5 / n,
+        "recall@10": r10 / n,
         "mrr@10": mrr / n,
         "q_latency_ms": round(sum(latencies) / len(latencies), 1) if latencies else 0.0,
         "approx_cost_usd": 0.0,  # local models are free; set from provider pricing otherwise
     }
 
+
 # ------------------------------------------------------------------ cli -------
-COLUMNS = ["name", "provider", "model", "dim", "recall@1", "recall@5",
-           "recall@10", "mrr@10", "q_latency_ms", "approx_cost_usd"]
+COLUMNS = [
+    "name",
+    "provider",
+    "model",
+    "dim",
+    "recall@1",
+    "recall@5",
+    "recall@10",
+    "mrr@10",
+    "q_latency_ms",
+    "approx_cost_usd",
+]
+
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="Embedding eval on your own vault.")
     ap.add_argument("--corpus", type=Path, help="directory of .md/.txt notes")
-    ap.add_argument("--queries", type=Path, help="JSON or CSV of {question, answer_note}")
+    ap.add_argument(
+        "--queries", type=Path, help="JSON or CSV of {question, answer_note}"
+    )
     ap.add_argument("--models", type=str, help="comma-separated model names")
-    ap.add_argument("--provider", default="ollama", help="embed backend (default: ollama)")
+    ap.add_argument(
+        "--provider", default="ollama", help="embed backend (default: ollama)"
+    )
     ap.add_argument("--k", type=int, default=10, help="top-k cutoff (default 10)")
     ap.add_argument("--out", type=Path, default=Path("results.csv"))
-    ap.add_argument("--demo", action="store_true", help="explain the queries format and exit")
+    ap.add_argument(
+        "--demo", action="store_true", help="explain the queries format and exit"
+    )
     args = ap.parse_args()
 
     if args.demo or not (args.corpus and args.queries and args.models):
         print(__doc__)
-        print("Nothing to run: pass --corpus, --queries and --models. "
-              "See the QUERIES FILE FORMAT block above.")
+        print(
+            "Nothing to run: pass --corpus, --queries and --models. "
+            "See the QUERIES FILE FORMAT block above."
+        )
         return
 
     notes = load_corpus(args.corpus)
@@ -183,20 +236,26 @@ def main() -> None:
     queries = load_queries(args.queries)
     if not queries:
         sys.exit(f"No usable questions in {args.queries}")
-    print(f"Corpus: {len(notes)} notes | Queries: {len(queries)} | "
-          f"Models: {args.models}")
+    print(
+        f"Corpus: {len(notes)} notes | Queries: {len(queries)} | Models: {args.models}"
+    )
     if len(notes) < 200:
-        print("  ! WARNING: fewer than 200 notes. Small sets saturate -- the "
-              "ranking you get here may not survive on your real pile.", file=sys.stderr)
+        print(
+            "  ! WARNING: fewer than 200 notes. Small sets saturate -- the "
+            "ranking you get here may not survive on your real pile.",
+            file=sys.stderr,
+        )
 
     rows = []
     for model in [m.strip() for m in args.models.split(",") if m.strip()]:
         print(f"\n== {model} ==")
         row = evaluate(model, args.provider, notes, queries, args.k)
         rows.append(row)
-        print(f"  recall@1={row['recall@1']:.3f}  recall@5={row['recall@5']:.3f}  "
-              f"recall@10={row['recall@10']:.3f}  mrr@10={row['mrr@10']:.3f}  "
-              f"{row['q_latency_ms']}ms/q")
+        print(
+            f"  recall@1={row['recall@1']:.3f}  recall@5={row['recall@5']:.3f}  "
+            f"recall@10={row['recall@10']:.3f}  mrr@10={row['mrr@10']:.3f}  "
+            f"{row['q_latency_ms']}ms/q"
+        )
 
     # sort best-first by recall@1 then mrr@10, write CSV, print table
     rows.sort(key=lambda r: (r["recall@1"], r["mrr@10"]), reverse=True)
@@ -208,10 +267,15 @@ def main() -> None:
     print(f"\nWrote {args.out}")
     print("\nRANKING (best first):")
     for r in rows:
-        print(f"  {r['name']:<28} r@1={r['recall@1']:.2f}  r@5={r['recall@5']:.2f}  "
-              f"mrr@10={r['mrr@10']:.2f}")
-    print("\nRun it again after your vault grows. The boring input -- more of your "
-          "own real data -- is what makes the decision trustworthy.")
+        print(
+            f"  {r['name']:<28} r@1={r['recall@1']:.2f}  r@5={r['recall@5']:.2f}  "
+            f"mrr@10={r['mrr@10']:.2f}"
+        )
+    print(
+        "\nRun it again after your vault grows. The boring input -- more of your "
+        "own real data -- is what makes the decision trustworthy."
+    )
+
 
 if __name__ == "__main__":
     main()

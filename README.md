@@ -59,7 +59,7 @@ cat > queries.json << 'QUERIES'
 QUERIES
 
 # 2. Run the eval
-python3 embed-eval-on-your-vault.py \
+python3 tools/embed-eval-on-your-vault.py \
     --corpus ~/path/to/your/vault \
     --queries queries.json \
     --models embeddinggemma,nomic-embed-text,bge-large,all-minilm \
@@ -81,7 +81,7 @@ will actually run it again next time your vault grows.
 
 ## The eval harness itself
 
-`embed-eval-on-your-vault.py` is the whole thing. Read the docstring at the
+`tools/embed-eval-on-your-vault.py` is the whole thing. Read the docstring at the
 top for the queries file format and the embed-backend swap pattern.
 
 ## The canonical harness
