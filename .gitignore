@@ -2,3 +2,6 @@ __pycache__/
 *.pyc
 results.csv
 .env
+
+# Dev-only lint policy (never committed into a public repo).
+/tools/anti-slop-python/
