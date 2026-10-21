@@ -1,5 +1,18 @@
 # embed-eval-on-your-vault
 
+---
+
+### Production Support, Operator Kit & Architecture Services
+
+The Modal Toolkit projects remain open-source and free to use. For production deployments and team operations, these commercial options are available:
+
+- **[Modal Production Operator Kit ($29)](https://github.com/sponsors/kylebrodeur):** A version-locked vendor installer, a real `mtk` overlay example, retrieval and fine-tune data recipes, a dated cost worksheet, and a Modal Vault MCP client installer.
+- **[Modal Architecture, Cost & Safety Audit ($147)](https://github.com/sponsors/kylebrodeur):** A written audit of one Modal application or deploy tree, with prioritized findings and recommendations.
+- **[Modal Vendor-Overlay Refactor ($247)](https://github.com/sponsors/kylebrodeur):** One ready-to-review pull request that moves one supported Modal package into a vendored overlay.
+- **[GitHub Sponsors ($9-$389/mo or one-time)](https://github.com/sponsors/kylebrodeur):** Monthly support, kit licenses, architecture calls, and retainer hours. Every tier's exact benefits are on that page.
+
+---
+
 **Pick the embedding model from YOUR corpus, not someone else's leaderboard.**
 
 A single-file Python eval harness for embedding models. Run it on your own vault
