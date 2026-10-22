@@ -1,3 +1,5 @@
+<img src="https://kylebrodeur.xyz/brand/readme-headers/embed-eval-on-your-vault.png" alt="embed-eval-on-your-vault: a single-file harness for picking an embedding model from your own data" width="100%">
+
 # embed-eval-on-your-vault
 
 ---
